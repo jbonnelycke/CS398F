@@ -1,0 +1,73 @@
+
+public class BinaryHeapPriorityQueue<T> {
+	
+	private static final int DEFAULT_CAPACITY = 10;
+	
+	private int heap_size;
+	private T[] A;
+	
+	public BinaryHeapPriorityQueue() {
+		
+	}
+	
+	public BinaryHeapPriorityQueue(int capacity) {
+		
+	}
+	
+	public BinaryHeapPriorityQueue(T[] items) {
+		
+	}
+	
+	public void insert(T key) {
+		this.heap_size = this.heap_size + 1;
+		this.A[this.heap_size] = Integer.MIN_VALUE;
+		this.increaseKey(this.heap_size, key);
+	}
+	
+	public T ExtractMax() {
+		if (this.A.heap_size < 1)
+			throw new Exception("heap underflow");
+		T max = this.A[1];
+		this.A[1] = this.A[this.A.heap_size];
+		this.A.heap_size = this.A.heap_size - 1;
+		this.MaxHeapify(1);
+		return max;
+		
+	}
+	
+	public void increaseKey(int i, T key) {
+		if (key < this.A[i]) 
+			throw new Exception ("new key is smaller than current key");
+		this.A[i] = key;
+		while (i > 1 && this.A[parent(i)] < A[i]) {
+			T temp = this.A[i];
+			this.A[i] = A[parent(i)];
+			A[parent(i)] = temp;
+			
+			i = parent(i);
+		}
+	}
+	
+	public T deleteMin() {
+		
+	}
+	
+	public boolean isEmpty() {
+		
+	}
+	
+	public void makeEmpty() {
+		
+	}
+	
+	private void percolateDown(int hole) {
+		
+	}
+	private void buildHeap() {
+		
+	}
+	
+	private void enlargeArray(int newSize) {
+		
+	}
+}
