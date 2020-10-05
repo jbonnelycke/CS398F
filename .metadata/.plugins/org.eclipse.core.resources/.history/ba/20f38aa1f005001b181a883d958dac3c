@@ -1,0 +1,31 @@
+
+public class Test {
+	public static void main(String[] args) throws Exception {
+		Integer[][] list = { { 2, 1 }, { 3, 2 }, { 4, 3 }, { 5, 4 }, { 7, 6 }, { 14, 13 }, { 15, 14 } };
+		int u = 75;
+
+		double k = 20;
+		System.out.println("k = " + k + ", highsqrt:" + highSqRt(k) + "* lowsqrt:" + lowSqRt(k) + " = "
+				+ highSqRt(k) * lowSqRt(k));
+
+		vEBtreePriorityQueue vebqueue = new vEBtreePriorityQueue(u, list);
+
+		for (int i = 0; i < list.length; i++) {
+			System.out.println(vebqueue.ExtractMax());
+		}
+
+	}
+
+	private static Double highSqRt(Double x) {
+		System.out.println(log2(x) / 2);
+		return Math.pow(2, Math.ceil(log2(x) / 2));
+	}
+
+	private static Double lowSqRt(Double x) {
+		return Math.pow(2, Math.floor(log2(x) / 2));
+	}
+
+	private static Double log2(Double x) {
+		return Math.log10(x) / Math.log10(2);
+	}
+}

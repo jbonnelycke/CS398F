@@ -1,0 +1,186 @@
+import java.util.ArrayList;
+
+public class vEBtreePriorityQueue {
+
+	private Integer u;
+	private Integer min, max;
+	public vEBtreePriorityQueue summary;
+	private ArrayList<vEBtreePriorityQueue> cluster;
+
+	private Integer[] values;
+
+	public vEBtreePriorityQueue(Integer u) {
+		if (values == null) {
+			values = new Integer[u];
+		}
+
+		this.u = u;
+
+		if (u <= 2) {
+			return;
+		}
+
+		summary = new vEBtreePriorityQueue((int) (highSqRt(u) + 0));
+
+		Integer numTrees = (int) (highSqRt(u) + 0), size = (int) (lowSqRt(u) + 0);
+		cluster = new ArrayList<vEBtreePriorityQueue>();
+		for (Integer i = 0; i < numTrees; i++) {
+			cluster.add(i, new vEBtreePriorityQueue(size));
+		}
+	}
+
+	public vEBtreePriorityQueue(Integer u, Integer[] list) {
+		this(u);
+		for (int i = 0; i < list.length; i++) {
+			if (list[i] != null) {
+				Insert(list[i], i);
+			}
+		}
+	}
+
+	public Integer ExtractMax() {
+		Integer max = vEBtreeMaximum();
+		vEBdelete(max);
+		values[max] = null;
+		return max;
+	}
+
+	public void Insert(Integer priority, Integer value) {
+		values[priority] = value;
+		vEBinsert(priority);
+	}
+
+	public void IncreaseKey(Integer priority, Integer value) {
+		if (values[priority] == null) {
+			return;
+		}
+		vEBdelete(priority);
+		values[priority] = value;
+		vEBinsert(priority);
+	}
+
+	public Integer vEBsucc(Integer x) {
+		if (u == 2) {
+			if (x == 0 && max == 1)
+				return 1;
+			else
+				return null;
+		} else if (this.min != null && x < this.min)
+			return min;
+		else {
+			Integer max_low = cluster.get(high(x)).vEBtreeMaximum();
+			if (max_low != null && low(x) < max_low) {
+				Integer offset = cluster.get(high(x)).vEBsucc(low(x));
+				return index(high(x), offset);
+			} else {
+				Integer succ_cluster = summary.vEBsucc(high(x));
+				if (succ_cluster == null)
+					return null;
+				else {
+					Integer offset = cluster.get(succ_cluster).vEBtreeMinimum();
+					return index(succ_cluster, offset);
+				}
+
+			}
+		}
+	}
+
+	public boolean vEBmember(Integer x) {
+		if (x == min || x == max)
+			return true;
+		else if (u == 2)
+			return false;
+		else
+			return cluster.get(high(x)).vEBmember(low(x));
+	}
+
+	public void vEBinsert(Integer x) {
+		if (min == null) {
+			vebEmptyTreeInsert(x);
+		} else {
+			if (x < this.min) {
+				Integer temp = this.min;
+				this.min = x;
+				x = temp;
+			}
+			if (u > 2) {
+				if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+					summary.vEBinsert(high(x));
+					cluster.get(high(x)).vebEmptyTreeInsert(low(x));
+				} else
+					cluster.get(high(x)).vEBinsert(low(x));
+			}
+			if (x > max)
+				max = x;
+		}
+	}
+
+	private void vebEmptyTreeInsert(Integer x) {
+		min = x;
+		max = x;
+	}
+
+	public void vEBdelete(Integer x) {
+		if (min == max) {
+			min = null;
+			max = null;
+		} else if (u == 2) {
+			if (x == 0)
+				min = 1;
+			else
+				min = 0;
+			max = min;
+		} else {
+			if (x == min) {
+				Integer first_cluster = summary.vEBtreeMinimum();
+				x = index(first_cluster, cluster.get(first_cluster).vEBtreeMinimum());
+				min = x;
+			}
+			cluster.get(high(x)).vEBdelete(low(x));
+			if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+				summary.vEBdelete(high(x));
+				if (x == max) {
+					Integer summary_max = summary.vEBtreeMaximum();
+					if (summary_max == null)
+						max = min;
+					else
+						max = index(summary_max, cluster.get(summary_max).vEBtreeMaximum());
+				}
+			} else if (x == max)
+				max = index(high(x), cluster.get(high(x)).vEBtreeMaximum());
+		}
+	}
+
+	public Integer vEBtreeMinimum() {
+		return min;
+	}
+
+	public Integer vEBtreeMaximum() {
+		return max;
+	}
+
+	private Integer high(Integer x) {
+		return (int) (Math.floor(x / lowSqRt(u)));
+	}
+
+	private Integer low(Integer x) {
+		return (int) (x % lowSqRt(u));
+	}
+
+	private Integer index(Integer x, Integer y) {
+		System.out.println(u);
+		return (int) (x * lowSqRt(u) + y);
+	}
+
+	private static Double highSqRt(Integer x) {
+		return Math.pow(2, Math.ceil(log2(x) / 2));
+	}
+
+	private static Double lowSqRt(Integer x) {
+		return Math.pow(2, Math.floor(log2(x) / 2));
+	}
+
+	private static Double log2(Integer x) {
+		return (Math.log(x) / Math.log(2));
+	}
+}

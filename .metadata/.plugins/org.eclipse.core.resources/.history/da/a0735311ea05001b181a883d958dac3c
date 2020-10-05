@@ -1,0 +1,14 @@
+
+public class Test {
+	public static void main(String[] args) throws Exception {
+		Integer[][] list = { { 2, 1 }, { 3, 2 }, { 4, 3 }, { 5, 4 }, { 7, 6 }, { 14, 13 }, { 15, 14 } };
+		int u = 16;
+
+		vEBtreePriorityQueue vebqueue = new vEBtreePriorityQueue(u, list);
+
+		for (int i = 0; i < list.length; i++) {
+			System.out.println(vebqueue.ExtractMax());
+		}
+
+	}
+}

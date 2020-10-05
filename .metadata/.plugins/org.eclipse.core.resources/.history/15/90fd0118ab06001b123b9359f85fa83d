@@ -1,0 +1,280 @@
+/*************************************************************************
+ *
+ *  Pace University
+ *  Fall 2020
+ *  Advanced Data Structures and Computational Geometry
+ *
+ *  Course: CS 398F
+ *  Author: Jack Bonnelycke
+ *  Collaborators: none
+ *  References: Introduction to Algorithms by Cormen et al.
+ *
+ *  Assignment: #1
+ *  Problem: Compare the run times of Priority Queues implemented with Binary Heaps and Van Emde Boas Trees for
+ *  		 construction and m operations on both.
+ *  Description: In this assignment, I implemented two types of priority queue, one with a binary heap and one with
+ *  			 a Van Emde Boas tree. In both I implemented the constructor and primary functions: insert(), 
+ *  			 extractMax(), and increaseKey(). Once these were both implemented, I hypothesized construction and
+ *  			 m operation running times, tested it with n insertions and m operations, and lastly analyzed the
+ *  			 results.
+ *
+ *  Input: Universe size u, items to insert n, and m operations.
+ *  Output: The run times for construction and n insertions on both data structures and for the same m operations on
+ *  		both data structures.
+ *
+ *  Visible data fields:
+ *  none
+ *
+ *  Visible methods:
+ *  public vEBtreePriorityQueue(Integer u) {
+ *  public vEBtreePriorityQueue(Integer u, Integer[] list) {
+ *  public Integer ExtractMax() {
+ *  public void Insert(Integer priority, Integer value) {
+ *  public void IncreaseKey(Integer priority, Integer value) {
+ *  public Integer vEBsucc(Integer x) {
+ *  public Integer vEBtreeMaximum() {
+ *  public Integer vEBtreeMinimum() {
+ *
+ *   Remarks
+ *   -------
+ *
+ *   1. Insertion is O(lgn) so inserting n times is O(nlgn).
+ *   2. All three operations are O(lgn) in the binary heap implementation of priority queue. If we do m of these
+ *   	operations then that's O(mlgn), which then amortized over those m operations is O(lgn)
+ *   3. Insertion is O(lglgu), so n times will be O(nlglgu).
+ *   4. As above, all three operations are the same, O(lglgu), so m times is O(mlglgu) amortized over the m 
+ *   	operations is O(lglgu).
+ *   
+ *   	(for these first two tables, u = 1048576, while in the third I played around with having a tight u)
+ *   
+ *   6. construction time |  n = 10^2  |  n = 10^3  |  n = 10^4  |  n = 10^5  | n = 10^6
+ *        binary heap     |  5088400   |  6052200   |  9179200   |  21180600  | 57974200
+ *         vEB tree       |  198816700 |  183842600 |  217866500 |  362887000 | 2334545300
+ *
+ *      m >= n operations |  n = 10^2  |  n = 10^3  |  n = 10^4  |  n = 10^5  | n = 10^6
+ *        binary heap     |   507500   |  1454100   |  7303100   |  101359000 | 6046404900
+ *         vEB tree       |  140452600 |  13024100  |  14027100  |  148561300 | 1203503900
+ *         
+ *      tight-bound u     |  n = 10^2  |  n = 10^3  |  n = 10^4  |  n = 10^5  | n = 10^6
+ *      				  |  u = 256   |  u = 1024	|  u = 16384 | u = 262144 | u = 1048576
+ *      construction	  |  3827800   |  5675300   |  18420700  |  177800000 | 981366200
+ *      m >= n operations |  1814300   |  2570600   |  15440500  |  130834300 | 1127774900
+ *      
+ *   7. Binary heap construction: The run times observed make sense. This is because we have
+ *   	lgn which is pretty close to constant, times n. So mostly in the result we will see
+ *      the effects of n. And looking at the numbers, it generally does that. Not quite though,
+ *      and I think the reason is that O(lgn) for insertions is a pretty loose bound since 
+ *      half the items are at the bottom of the "tree" that a binary heap uses. A pretty close
+ *      relation can be seen at n = 10^4 to n = 10^5 which hops from 9179200 to 21180600. I
+ *      should also note there could be unexpected overhead from how I implemented both of 
+ *      the data structures to keep track of priority and value, as well as achieving random
+ *      order.
+ *      
+ *      VEB construction: In this construction, the run times make sense again. The lglgu
+ *      isn't really seen, and we just get the effects of n. This is seen best between 
+ *      n = 10^5 and n = 10^6 when the number of digits increases by one from 362887000 to
+ *      2334545300. While not part of the big-O, it doesn't help adding the base u time from
+ *      making the empty tree before adding anything in.
+ *      
+ *      Binary Heap operations: Again, we see mostly linear run times. From n = 10^5 to 
+ *      n = 10^6 we see a good example, with an extra digit added when going from 101359000
+ *      to 6036404900.
+ *      
+ *      VEB operations: From 10^4 to 10^5 for n, we see linear run times in the numbers
+ *      18420700 and 177800000. 
+ *      
+ *      I know question 7 is not asking our opinion, but I just found it fascinating that
+ *      such an exciting data structure didn't perform very well in practice. I am certain
+ *      there is a lot of overhead going on, but even when I have a tighter-bound u, it
+ *      barely performs better than the binary heap. The most noticeable different is at
+ *      n = 10^6, so maybe it just needs a larger number of operations to really feel the
+ *      difference.
+ *
+ *************************************************************************/
+
+import java.util.ArrayList;
+
+public class vEBtreePriorityQueue {
+
+	private Integer u;
+	private Integer min, max;
+	public vEBtreePriorityQueue summary;
+	private ArrayList<vEBtreePriorityQueue> cluster;
+
+	private Integer[] values;
+
+	public vEBtreePriorityQueue(Integer u) {
+		if (values == null) {
+			values = new Integer[u];
+		}
+
+		this.u = u;
+
+		if (u <= 2) {
+			return;
+		}
+
+		summary = new vEBtreePriorityQueue((int) (highSqRt(u) + 0));
+
+		Integer numTrees = (int) (highSqRt(u) + 0), size = (int) (lowSqRt(u) + 0);
+		cluster = new ArrayList<vEBtreePriorityQueue>();
+		for (Integer i = 0; i < numTrees; i++) {
+			cluster.add(i, new vEBtreePriorityQueue(size));
+		}
+	}
+
+	public vEBtreePriorityQueue(Integer u, Integer[] list) {
+		this(u);
+		for (int i = 0; i < list.length; i++) {
+			if (list[i] != null) {
+				Insert(list[i], i);
+			}
+		}
+	}
+
+	public Integer ExtractMax() {
+		Integer max = vEBtreeMaximum();
+		vEBdelete(max);
+		values[max] = null;
+		return max;
+	}
+
+	public void Insert(Integer priority, Integer value) {
+		values[priority] = value;
+		vEBinsert(priority);
+	}
+
+	public void IncreaseKey(Integer priority, Integer value) {
+		if (values[priority] == null) {
+			return;
+		}
+		vEBdelete(priority);
+		values[priority] = value;
+		vEBinsert(priority);
+	}
+
+	public Integer vEBsucc(Integer x) {
+		if (u == 2) {
+			if (x == 0 && max == 1)
+				return 1;
+			else
+				return null;
+		} else if (this.min != null && x < this.min)
+			return min;
+		else {
+			Integer max_low = cluster.get(high(x)).vEBtreeMaximum();
+			if (max_low != null && low(x) < max_low) {
+				Integer offset = cluster.get(high(x)).vEBsucc(low(x));
+				return index(high(x), offset);
+			} else {
+				Integer succ_cluster = summary.vEBsucc(high(x));
+				if (succ_cluster == null)
+					return null;
+				else {
+					Integer offset = cluster.get(succ_cluster).vEBtreeMinimum();
+					return index(succ_cluster, offset);
+				}
+
+			}
+		}
+	}
+
+	public boolean vEBmember(Integer x) {
+		if (x == min || x == max)
+			return true;
+		else if (u == 2)
+			return false;
+		else
+			return cluster.get(high(x)).vEBmember(low(x));
+	}
+
+	private void vEBinsert(Integer x) {
+		if (min == null) {
+			vebEmptyTreeInsert(x);
+		} else {
+			if (x < this.min) {
+				Integer temp = this.min;
+				this.min = x;
+				x = temp;
+			}
+			if (u > 2) {
+				if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+					summary.vEBinsert(high(x));
+					cluster.get(high(x)).vebEmptyTreeInsert(low(x));
+				} else
+					cluster.get(high(x)).vEBinsert(low(x));
+			}
+			if (x > max)
+				max = x;
+		}
+	}
+
+	private void vebEmptyTreeInsert(Integer x) {
+		min = x;
+		max = x;
+	}
+
+	private void vEBdelete(Integer x) {
+		if (min == max) {
+			min = null;
+			max = null;
+		} else if (u == 2) {
+			if (x == 0)
+				min = 1;
+			else
+				min = 0;
+			max = min;
+		} else {
+			if (x == min) {
+				Integer first_cluster = summary.vEBtreeMinimum();
+				x = index(first_cluster, cluster.get(first_cluster).vEBtreeMinimum());
+				min = x;
+			}
+			cluster.get(high(x)).vEBdelete(low(x));
+			if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+				summary.vEBdelete(high(x));
+				if (x == max) {
+					Integer summary_max = summary.vEBtreeMaximum();
+					if (summary_max == null)
+						max = min;
+					else {
+						max = index(summary_max, cluster.get(summary_max).vEBtreeMaximum());
+					}
+				}
+			} else if (x == max)
+				max = index(high(x), cluster.get(high(x)).vEBtreeMaximum());
+		}
+	}
+
+	public Integer vEBtreeMinimum() {
+		return min;
+	}
+
+	public Integer vEBtreeMaximum() {
+		return max;
+	}
+
+	private Integer high(Integer x) {
+		return (int) (Math.floor(x / lowSqRt(u)));
+	}
+
+	private Integer low(Integer x) {
+		return (int) (x % lowSqRt(u));
+	}
+
+	private Integer index(Integer x, Integer y) {
+		return (int) (x * lowSqRt(u) + y);
+	}
+
+	private static Double highSqRt(Integer x) {
+		return Math.pow(2, Math.ceil(log2(x) / 2));
+	}
+
+	private static Double lowSqRt(Integer x) {
+		return Math.pow(2, Math.floor(log2(x) / 2));
+	}
+
+	private static Double log2(Integer x) {
+		return (Math.log(x) / Math.log(2));
+	}
+}

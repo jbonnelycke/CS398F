@@ -1,0 +1,26 @@
+
+public class Node {
+	int priority;
+	int value;
+
+	Node(int priority, int value) {
+		this.priority = priority;
+		this.value = value;
+	}
+
+	private int getPriority() {
+		return priority;
+	}
+
+	private int getValue() {
+		return value;
+	}
+
+	private void setPriority(int newPriority) {
+		priority = newPriority;
+	}
+
+	private void setValue(int newValue) {
+		value = newValue;
+	}
+}

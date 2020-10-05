@@ -1,0 +1,193 @@
+import java.util.ArrayList;
+
+public class vEBtreePriorityQueue {
+
+	private Integer u;
+	private Integer min, max;
+	public vEBtreePriorityQueue summary;
+	private ArrayList<vEBtreePriorityQueue> cluster;
+
+	private ArrayList<Integer> values;
+
+	public vEBtreePriorityQueue(Integer u) {
+		if (values == null) {
+			values = new ArrayList<Integer>();
+			for (int i = 0; i < u; i++)
+				values.add(i, null);
+			
+			int y = 6;
+			int k = (int) Math.pow(2, 2 * y);
+			System.out.println("k = " + k + ", highsqrt:" + highSqRt(k) + "* lowsqrt:" + lowSqRt(k) + " = " + highSqRt(k) * lowSqRt(k));
+		}
+
+		this.u = u;
+
+		if (u <= 2) {
+			return;
+		}
+
+		summary = new vEBtreePriorityQueue(highSqRt(u));
+
+		Integer numTrees = highSqRt(u), size = lowSqRt(u);
+		cluster = new ArrayList<vEBtreePriorityQueue>();
+		for (Integer i = 0; i < numTrees; i++) {
+			cluster.add(i, new vEBtreePriorityQueue(size));
+		}
+	}
+
+	public vEBtreePriorityQueue(Integer u, Integer[][] list) {
+		this(u);
+		for (int i = 0; i < list.length; i++) {
+			if (list[i] != null) {
+				System.out.println("<" + list[i][0] + ", " + list[i][1] + ">");
+				Insert(list[i][0], list[i][1]);
+			}
+		}
+	}
+
+	public Integer ExtractMax() {
+		Integer max = vEBtreeMaximum();
+		vEBdelete(max);
+		values.set(max, null);
+		return max;
+	}
+
+	public void Insert(Integer priority, Integer value) {
+		values.set(priority, value);
+		for (int i = 0; i < values.size(); i++) 
+			System.out.println(values.get(i));
+		vEBinsert(priority);
+	}
+
+	public void IncreaseKey(Integer priority, Integer value) {
+		vEBdelete(values.get(priority));
+		values.set(priority, value);
+		vEBinsert(priority);
+	}
+
+	public Integer vEBsucc(Integer x) {
+		if (u == 2) {
+			if (x == 0 && max == 1)
+				return 1;
+			else
+				return null;
+		} else if (this.min != null && x < this.min)
+			return min;
+		else {
+			Integer max_low = cluster.get(high(x)).vEBtreeMaximum();
+			if (max_low != null && low(x) < max_low) {
+				Integer offset = cluster.get(high(x)).vEBsucc(low(x));
+				return index(high(x), offset);
+			} else {
+				Integer succ_cluster = summary.vEBsucc(high(x));
+				if (succ_cluster == null)
+					return null;
+				else {
+					Integer offset = cluster.get(succ_cluster).vEBtreeMinimum();
+					return index(succ_cluster, offset);
+				}
+
+			}
+		}
+	}
+
+	public boolean vEBmember(Integer x) {
+		if (x == min || x == max)
+			return true;
+		else if (u == 2)
+			return false;
+		else
+			return cluster.get(high(x)).vEBmember(low(x));
+	}
+
+	public void vEBinsert(Integer x) {
+		System.out.println("u:" + u + ", min:" + min + ", max:" + max + ", cluster.size():" + cluster.size());
+		if (min == null) {
+			vebEmptyTreeInsert(x);
+		} else {
+			if (x < this.min) {
+				Integer temp = this.min;
+				this.min = x;
+				x = temp;
+			}
+			if (u > 2) {
+				if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+					summary.vEBinsert(high(x));
+					cluster.get(high(x)).vebEmptyTreeInsert(low(x));
+				} else
+					cluster.get(high(x)).vEBinsert(low(x));
+			}
+			if (x > max)
+				max = x;
+		}
+		System.out.println("u:" + u + ", min:" + min + ", max:" + max);
+	}
+
+	private void vebEmptyTreeInsert(Integer x) {
+		min = x;
+		max = x;
+	}
+
+	public void vEBdelete(Integer x) {
+		if (min == max) {
+			min = null;
+			max = null;
+		} else if (u == 2) {
+			if (x == 0)
+				min = 1;
+			else
+				min = 0;
+			max = min;
+		} else {
+			if (x == min) {
+				Integer first_cluster = summary.vEBtreeMinimum();
+				x = index(first_cluster, cluster.get(first_cluster).vEBtreeMinimum());
+				min = x;
+			}
+			cluster.get(high(x)).vEBdelete(low(x));
+			if (cluster.get(high(x)).vEBtreeMinimum() == null) {
+				summary.vEBdelete(high(x));
+				if (x == max) {
+					Integer summary_max = summary.vEBtreeMaximum();
+					if (summary_max == null)
+						max = min;
+					else
+						max = index(summary_max, cluster.get(summary_max).vEBtreeMaximum());
+				}
+			} else if (x == max)
+				max = index(high(x), cluster.get(high(x)).vEBtreeMaximum());
+		}
+	}
+
+	public Integer vEBtreeMinimum() {
+		return min;
+	}
+
+	public Integer vEBtreeMaximum() {
+		return max;
+	}
+
+	private Integer high(Integer x) {
+		return (int) Math.floor(x / lowSqRt(u));
+	}
+
+	private Integer low(Integer x) {
+		return x % lowSqRt(u);
+	}
+
+	private Integer index(Integer x, Integer y) {
+		return x * lowSqRt(u) + y;
+	}
+
+	private static Integer highSqRt(Integer x) {
+		return (int) Math.pow(2, Math.ceil(log2(x) / 2));
+	}
+
+	private static Integer lowSqRt(Integer x) {
+		return (int) Math.pow(2, Math.floor(log2(x) / 2));
+	}
+
+	private static Integer log2(Integer x) {
+		return (int) (Math.log(x) / Math.log(2));
+	}
+}

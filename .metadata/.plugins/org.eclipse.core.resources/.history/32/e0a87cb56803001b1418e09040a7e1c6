@@ -1,0 +1,8 @@
+
+public class Test {
+	public static void main(String[] args) throws Exception {
+		Integer[][] list = new Integer[10][2];
+		
+		BinaryHeapPriorityQueue bhqueue = new BinaryHeapPriorityQueue(list);
+	}
+}

@@ -1,0 +1,163 @@
+/*************************************************************************
+ *
+ *  Pace University
+ *  Fall 2020
+ *  Advanced Data Structures and Computational Geometry
+ *
+ *  Course: CS 398F
+ *  Author: Jack Bonnelycke
+ *  Collaborators: none
+ *  References: Introduction to Algorithms by Cormen et al.
+ *
+ *  Assignment: #1
+ *  Problem: Compare the run times of Priority Queues implemented with Binary Heaps and Van Emde Boas Trees for
+ *  		 construction and m operations on both.
+ *  Description: In this assignment, I implemented two types of priority queue, one with a binary heap and one with
+ *  			 a Van Emde Boas tree. In both I implemented the constructor and primary functions: insert(), 
+ *  			 extractMax(), and increaseKey(). Once these were both implemented, I hypothesized construction and
+ *  			 m operation running times, tested it with n insertions and m operations, and lastly analyzed the
+ *  			 results.
+ *
+ *  Input: Universe size u, items to insert n, and m operations.
+ *  Output: The run times for construction and n insertions on both data structures and for the same m operations on
+ *  		both data structures.
+ *
+ *  Visible data fields:
+ *  none
+ *
+ *  Visible methods:
+ *  public static void main(String[] args) throws Exception {
+ *
+ *
+ *   Remarks
+ *   -------
+ *
+ *   1. Insertion is O(lgn) so inserting n times is O(nlgn).
+ *   2. All three operations are O(lgn) in the binary heap implementation of priority queue. If we do m of these
+ *   	operations then that's O(mlgn), which then amortized over those m operations is O(lgn)
+ *   3. Insertion is O(lglgu), so n times will be O(nlglgu).
+ *   4. As above, all three operations are the same, O(lglgu), so m times is O(mlglgu) amortized over the m 
+ *   	operations is O(lglgu).
+ *   
+ *   6. construction time |  n = 10^2  |  n = 10^3  |  n = 10^4  |  n = 10^5  | n = 10^6
+ *        binary heap     |  5088400   |  6052200   |  9179200   |  21180600  | 57974200
+ *         vEB tree       |  198816700 |  183842600 |            |            |
+ *         
+ *      m >= n operations |  n = 10^2  |  n = 10^3  |  n = 10^4  |  n = 10^5  | n = 10^6
+ *        binary heap     |
+ *         vEB tree       |
+ *
+ *
+ *************************************************************************/
+
+import java.util.Scanner;
+import java.util.Stack;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class Driver {
+	public static void main(String[] args) throws Exception {
+		Scanner scan = new Scanner(System.in);
+		Random rand = new Random();
+		
+		int universe, priority, val, n, m, selection, temp;
+		long startTimebhc, endTimebhc, startTimevebc, endTimevebc, startTimebho, endTimebho, startTimevebo, endTimevebo;
+		
+		System.out.println("How big should the universe be?");
+		universe = scan.nextInt();
+		
+		System.out.println("How many items do you want to insert?");
+		n = scan.nextInt();
+		
+		System.out.println("How many operations should happen? (> # items)");
+		m = scan.nextInt();
+		
+		Integer[] list = new Integer[universe];
+		
+//		for (int i = 0; i < universe; i++) {
+//			list.add(i, null);
+//		}
+		
+		for (int i = 0; i < n; i++) {
+			priority = rand.nextInt(universe);
+			val = rand.nextInt(universe);
+			while (contains(list, priority)) {
+				priority = rand.nextInt(universe);
+				val = rand.nextInt(universe);
+			}
+			list[val] = priority;
+		}
+		
+//		startTimebhc = System.nanoTime();
+//		BinaryHeapPriorityQueue bhqueue = new BinaryHeapPriorityQueue(list);
+//		endTimebhc = System.nanoTime();
+//		System.out.println(endTimebhc - startTimebhc + " nanoseconds for Binary Heap Priority Queue construction");
+		
+		startTimevebc = System.nanoTime();
+		vEBtreePriorityQueue vebqueue = new vEBtreePriorityQueue(universe, list);
+		endTimevebc = System.nanoTime();
+		System.out.println(endTimevebc - startTimevebc + " nanoseconds for Van Emde Boas Priority Queue construction");
+//		
+//		Stack<Integer> stk1 = new Stack<Integer>();
+//		Stack<Integer> stk2 = new Stack<Integer>();
+//		for (int i = 0; i < m; i++) {
+//			temp = rand.nextInt(3);
+//			stk1.push(temp);
+//			stk2.push(temp);
+//		}
+//		
+//		startTimebho = System.nanoTime();
+//		for (int i = 0; i < m ; i++) {
+//			selection = stk1.pop();
+//			switch (selection) {
+//			case 0:
+//				bhqueue.ExtractMax();
+//				break;
+//			case 1:
+//				priority = rand.nextInt(universe);
+//				val = rand.nextInt(universe);
+//				bhqueue.insert(val, priority);
+//				break;
+//			case 2:
+//				priority = rand.nextInt(bhqueue.getSize());
+//				val = rand.nextInt(universe);
+//				bhqueue.increaseKeyRandom(val, priority);
+//				break;
+//			}
+//		}
+//		endTimebho = System.nanoTime();
+//		System.out.println(endTimebho - startTimebho + " nanoseconds for Binary Heap Priority Queue operations");
+//		
+//		startTimevebo = System.nanoTime();
+//		for (int i = 0; i < m ; i++) {
+//			selection = stk2.pop();
+//			switch (selection) {
+//			case 0:
+//				vebqueue.ExtractMax();
+//				break;
+//			case 1:
+//				priority = rand.nextInt(universe);
+//				val = rand.nextInt(universe);
+//				vebqueue.Insert(priority, val);
+//				break;
+//			case 2:
+//				priority = rand.nextInt(universe);
+//				val = rand.nextInt(universe);
+//				vebqueue.IncreaseKey(priority, val);
+//				break;
+//			}
+//		}
+//		endTimevebo = System.nanoTime();
+//		System.out.println(endTimevebo - startTimevebo + " nanoseconds for Van Emde Boas Priority Queue operations");
+//		
+//		scan.close();
+	}
+	
+	private static Boolean contains(Integer[] a, Integer x) {
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] == x)
+				return true;
+		}
+		return false;
+	}
+}

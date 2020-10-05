@@ -1,0 +1,24 @@
+
+public class test {
+	public static void main(String[] args) {
+		Integer[] list = new Integer[1048576];
+		int u = 1048576;
+		
+		list[1] = 2;
+		list[2] = 3;
+		list[3] = 4;
+		list[4] = 5;
+		list[6] = 7;
+		list[13] = 14;
+		list[14] = 15;
+		
+		vEBtreePriorityQueue veb = new vEBtreePriorityQueue(u, list);
+		
+		veb.ExtractMax();
+		veb.ExtractMax();
+		veb.ExtractMax();
+		veb.ExtractMax();
+		veb.ExtractMax();
+		veb.ExtractMax();
+	}
+}
